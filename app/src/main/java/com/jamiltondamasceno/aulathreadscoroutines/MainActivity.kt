@@ -8,8 +8,11 @@ import androidx.lifecycle.lifecycleScope
 import com.jamiltondamasceno.aulathreadscoroutines.api.EnderecoAPI
 import com.jamiltondamasceno.aulathreadscoroutines.api.RetrofitHelper
 import com.jamiltondamasceno.aulathreadscoroutines.databinding.ActivityMainBinding
+import com.jamiltondamasceno.aulathreadscoroutines.model.EnderecoModel
 import kotlinx.coroutines.*
+import retrofit2.Response
 import java.lang.Runnable
+import java.util.concurrent.Executor
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity() {
@@ -123,8 +126,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun recuperarEndereco() {
-        val enderecoAPI = retrofit.create(EnderecoAPI::class.java)
-        enderecoAPI.recuperarEndereco()
+        var retorno:  Response<EnderecoModel>? = null
+       try{
+           val enderecoAPI = retrofit.create(EnderecoAPI::class.java)
+           retorno = enderecoAPI.recuperarEndereco()
+       }catch (e:Exception){
+           e.printStackTrace()
+           Log.i("info_endereco","erro ao recuperar")
+       }
+
+        if(retorno != null){
+            if (retorno.isSuccessful){
+                //recebe o corpo inteiro da resposta
+                val endereco = retorno.body()
+                val rua = endereco?.logradouro
+                val cidade = endereco?.localidade
+                Log.i("info_endereco","endereco: $rua, $cidade")
+
+            }
+        }
      }
 
 
