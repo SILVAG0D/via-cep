@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.jamiltondamasceno.aulathreadscoroutines.api.EnderecoAPI
 import com.jamiltondamasceno.aulathreadscoroutines.api.RetrofitHelper
 import com.jamiltondamasceno.aulathreadscoroutines.databinding.ActivityMainBinding
-import com.jamiltondamasceno.aulathreadscoroutines.model.EnderecoModel
+import com.jamiltondamasceno.aulathreadscoroutines.model.Endereco
 import kotlinx.coroutines.*
 import retrofit2.Response
 import java.lang.Runnable
@@ -53,122 +53,120 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
-            /*            //CoroutineScope(Dispatchers.Main).launch {
-            //MainScope().launch {
-            //CoroutineScope(Dispatchers.IO).launch {
-            //GlobalScope.launch {
-            //lifecycleScope.launch {
-            runBlocking {
-                binding.btnIniciar.text = "Executando"
-                repeat(30){ indice ->
-                    //binding.btnIniciar.text = "Executando $indice"
-                    Log.i("info_coroutine", "Executando: $indice T: ${Thread.currentThread().name}")
-                    delay(1000L)
-                }
+        /*            //CoroutineScope(Dispatchers.Main).launch {
+        //MainScope().launch {
+        //CoroutineScope(Dispatchers.IO).launch {
+        //GlobalScope.launch {
+        //lifecycleScope.launch {
+        runBlocking {
+            binding.btnIniciar.text = "Executando"
+            repeat(30){ indice ->
+                //binding.btnIniciar.text = "Executando $indice"
+                Log.i("info_coroutine", "Executando: $indice T: ${Thread.currentThread().name}")
+                delay(1000L)
             }
+        }
 
-            repeat(15){ indice ->
-                Log.i("info_thread", "Executando: $indice T: ${Thread.currentThread().name}")
+        repeat(15){ indice ->
+            Log.i("info_thread", "Executando: $indice T: ${Thread.currentThread().name}")
+            Thread.sleep(1000)//ms 1000 -> 1s
+        }
+        //MinhaThread().start()
+        //Thread( MinhaRunnable() ).start()
+        Thread {
+            repeat(30){ indice ->
+                Log.i("info_thread", "MinhaThread: $indice T: ${Thread.currentThread().name}")
+                runOnUiThread {
+                    binding.btnIniciar.text = "Executando: $indice T: ${Thread.currentThread().name}"
+                    binding.btnIniciar.isEnabled = false
+                    if( indice == 29 ){
+                        binding.btnIniciar.text = "Reiniciar execução"
+                        binding.btnIniciar.isEnabled = true
+                    }
+                }
                 Thread.sleep(1000)//ms 1000 -> 1s
             }
-            //MinhaThread().start()
-            //Thread( MinhaRunnable() ).start()
-            Thread {
-                repeat(30){ indice ->
-                    Log.i("info_thread", "MinhaThread: $indice T: ${Thread.currentThread().name}")
-                    runOnUiThread {
-                        binding.btnIniciar.text = "Executando: $indice T: ${Thread.currentThread().name}"
-                        binding.btnIniciar.isEnabled = false
-                        if( indice == 29 ){
-                            binding.btnIniciar.text = "Reiniciar execução"
-                            binding.btnIniciar.isEnabled = true
-                        }
-                    }
-                    Thread.sleep(1000)//ms 1000 -> 1s
-                }
-            }.start()
+        }.start()
 
-            job = CoroutineScope( Dispatchers.IO ).launch {
-                repeat(15){ indice ->
-                    Log.i("info_coroutine", "Executando: $indice T: ${Thread.currentThread().name}")
+        job = CoroutineScope( Dispatchers.IO ).launch {
+            repeat(15){ indice ->
+                Log.i("info_coroutine", "Executando: $indice T: ${Thread.currentThread().name}")
 
-                    withContext( Dispatchers.Main ){
-                        binding.btnIniciar.text = "Executando: $indice T: ${Thread.currentThread().name}"
-                    }
-
-                    delay(1000)//ms 1000 -> 1s
-                }
-                withTimeout(7000L){
-                    executar()
+                withContext( Dispatchers.Main ){
+                    binding.btnIniciar.text = "Executando: $indice T: ${Thread.currentThread().name}"
                 }
 
-                val tempo = measureTimeMillis {
+                delay(1000)//ms 1000 -> 1s
+            }
+            withTimeout(7000L){
+                executar()
+            }
 
-                    val resultado1 = async {tarefa1()}//pedro
-                    val resultado2 = async {tarefa2()}//maria
+            val tempo = measureTimeMillis {
 
-                    withContext( Dispatchers.Main ){
-                        binding.btnIniciar.text = "${resultado1.await()}"
-                        binding.btnParar.text = "${resultado2.await()}"
-                    }
+                val resultado1 = async {tarefa1()}//pedro
+                val resultado2 = async {tarefa2()}//maria
 
-                    Log.i("info_coroutine", "resultado1: ${resultado1.await()}")
-                    Log.i("info_coroutine", "resultado2: ${resultado2.await()}")
-
+                withContext( Dispatchers.Main ){
+                    binding.btnIniciar.text = "${resultado1.await()}"
+                    binding.btnParar.text = "${resultado2.await()}"
                 }
-                Log.i("info_coroutine", "Tempo: $tempo")
-            }*/
 
+                Log.i("info_coroutine", "resultado1: ${resultado1.await()}")
+                Log.i("info_coroutine", "resultado2: ${resultado2.await()}")
 
+            }
+            Log.i("info_coroutine", "Tempo: $tempo")
+        }*/
 
 
     }
 
     private suspend fun recuperarEndereco() {
-        var retorno:  Response<EnderecoModel>? = null
-       try{
-           val enderecoAPI = retrofit.create(EnderecoAPI::class.java)
-           retorno = enderecoAPI.recuperarEndereco()
-       }catch (e:Exception){
-           e.printStackTrace()
-           Log.i("info_endereco","erro ao recuperar")
-       }
+        var retorno: Response<Endereco>? = null
+        val cepDigitadoUsuario = "80250220"
+        try {
+            val enderecoAPI = retrofit.create(EnderecoAPI::class.java)
+            retorno = enderecoAPI.recuperarEndereco(cepDigitadoUsuario)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.i("info_endereco", "erro ao recuperar")
+        }
 
-        if(retorno != null){
-            if (retorno.isSuccessful){
+        if (retorno != null) {
+            if (retorno.isSuccessful) {
                 //recebe o corpo inteiro da resposta
                 val endereco = retorno.body()
                 val rua = endereco?.logradouro
                 val cidade = endereco?.localidade
-                Log.i("info_endereco","endereco: $rua, $cidade")
+                Log.i("info_endereco", "endereco: $rua, $cidade")
 
             }
         }
-     }
+    }
 
 
-    private suspend fun tarefa1() : String {
-        repeat(3){ indice ->
+    private suspend fun tarefa1(): String {
+        repeat(3) { indice ->
             Log.i("info_coroutine", "tarefa1: $indice T: ${Thread.currentThread().name}")
             delay(1000L)//ms 1000 -> 1s
         }
-        return  "Executou tarefa 1"
+        return "Executou tarefa 1"
     }
 
-    private suspend fun tarefa2() : String {
-        repeat(5){ indice ->
+    private suspend fun tarefa2(): String {
+        repeat(5) { indice ->
             Log.i("info_coroutine", "tarefa2: $indice T: ${Thread.currentThread().name}")
             delay(1000L)//ms 1000 -> 1s
         }
-        return  "Executou tarefa 2"
+        return "Executou tarefa 2"
     }
 
-    private suspend fun executar(){
-        repeat(15){ indice ->
+    private suspend fun executar() {
+        repeat(15) { indice ->
             Log.i("info_coroutine", "Executando: $indice T: ${Thread.currentThread().name}")
 
-            withContext( Dispatchers.Main ){
+            withContext(Dispatchers.Main) {
                 binding.btnIniciar.text = "Executando: $indice T: ${Thread.currentThread().name}"
                 binding.btnIniciar.isEnabled = false
             }
@@ -177,14 +175,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun dadosUsuario(){
+    private suspend fun dadosUsuario() {
         val usuario = recuperarUsuarioLogado()
         Log.i("info_coroutine", "usuario: ${usuario.nome} T: ${Thread.currentThread().name}")
-        val postagens = recuperarPostagensPeloId( usuario.id )
+        val postagens = recuperarPostagensPeloId(usuario.id)
         Log.i("info_coroutine", "postagens: ${postagens.size} T: ${Thread.currentThread().name}")
     }
 
-    private suspend fun recuperarPostagensPeloId( idUsuario: Int ) : List<String> {
+    private suspend fun recuperarPostagensPeloId(idUsuario: Int): List<String> {
         delay(2000)//2s
         return listOf(
             "Viagem Nordeste",
@@ -202,9 +200,9 @@ class MainActivity : AppCompatActivity() {
 
     inner class MinhaRunnable : Runnable {
         override fun run() {
-            repeat(30){ indice ->
+            repeat(30) { indice ->
 
-                if ( pararThread ){
+                if (pararThread) {
                     pararThread = false
                     return
                 }
@@ -212,9 +210,10 @@ class MainActivity : AppCompatActivity() {
 
                 Log.i("info_thread", "MinhaThread: $indice T: ${Thread.currentThread().name}")
                 runOnUiThread {
-                    binding.btnIniciar.text = "Executando: $indice T: ${Thread.currentThread().name}"
+                    binding.btnIniciar.text =
+                        "Executando: $indice T: ${Thread.currentThread().name}"
                     binding.btnIniciar.isEnabled = false
-                    if( indice == 29 ){
+                    if (indice == 29) {
                         binding.btnIniciar.text = "Reiniciar execução"
                         binding.btnIniciar.isEnabled = true
                     }
@@ -229,12 +228,12 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             super.run()
 
-            repeat(30){ indice ->
+            repeat(30) { indice ->
                 Log.i("info_thread", "MinhaThread: $indice T: ${currentThread().name}")
                 runOnUiThread {
                     binding.btnIniciar.text = "Executando: $indice T: ${currentThread().name}"
                     binding.btnIniciar.isEnabled = false
-                    if( indice == 29 ){
+                    if (indice == 29) {
                         binding.btnIniciar.text = "Reiniciar execução"
                         binding.btnIniciar.isEnabled = true
                     }
